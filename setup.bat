@@ -2,7 +2,7 @@
 set "SCRIPT_DIR=%~dp0"
 
 echo ==========================================
-echo Ignite Agent - Setup Script
+echo Trace Control - Setup Script
 echo ==========================================
 echo.
 
@@ -24,7 +24,7 @@ if not exist "%SCRIPT_DIR%venv\Scripts\python.exe" (
     echo [1/5] Virtual environment already exists.
 )
 
-echo [2/5] Activating virtual environment...
+echo [2/5] Activating local virtual environment...
 call "%SCRIPT_DIR%venv\Scripts\activate.bat"
 
 echo [3/5] Upgrading pip...

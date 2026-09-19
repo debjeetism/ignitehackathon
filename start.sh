@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "=========================================="
-echo "Ignite Agent - Quick Start"
+echo "Trace Control - Quick Start"
 echo "=========================================="
 echo ""
 

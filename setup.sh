@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "=========================================="
-echo "Ignite Agent - Setup Script"
+echo "Trace Control - Setup Script"
 echo "=========================================="
 echo ""
 
@@ -11,10 +11,14 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-echo "[1/5] Creating virtual environment..."
-python3 -m venv venv || { echo "ERROR: Failed to create virtual environment"; exit 1; }
+if [ ! -x "venv/bin/python" ]; then
+    echo "[1/5] Creating local virtual environment..."
+    python3 -m venv venv || { echo "ERROR: Failed to create virtual environment"; exit 1; }
+else
+    echo "[1/5] Local virtual environment already exists."
+fi
 
-echo "[2/5] Activating virtual environment..."
+echo "[2/5] Activating local virtual environment..."
 source venv/bin/activate
 
 echo "[3/5] Upgrading pip..."

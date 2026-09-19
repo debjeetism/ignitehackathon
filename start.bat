@@ -2,7 +2,7 @@
 set "SCRIPT_DIR=%~dp0"
 
 echo ==========================================
-echo Ignite Agent - Quick Start
+echo Trace Control - Quick Start
 echo ==========================================
 echo.
 

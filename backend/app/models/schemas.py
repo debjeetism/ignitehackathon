@@ -130,6 +130,19 @@ class IngestionResult(IngestionPreview):
     created_relationships: int = 0
 
 
+class WorkflowRun(BaseModel):
+    run_id: str
+    status: str
+    task_slug: str
+    result: Optional[Any] = None
+    error: Optional[str] = None
+
+
+class WorkflowAvailability(BaseModel):
+    enabled: bool
+    task_slug: Optional[str] = None
+
+
 class AgentMessage(BaseModel):
     role: str = Field(..., pattern="^(user|assistant|system)$")
     content: str

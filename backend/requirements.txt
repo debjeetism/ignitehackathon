@@ -12,3 +12,4 @@ cognee==1.5.4
 httpx==0.28.1
 python-multipart==0.0.32
 truststore==0.10.4
+render>=1.0.1

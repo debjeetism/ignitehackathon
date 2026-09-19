@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     
     # Tavily
     TAVILY_API_KEY: str = ""
+
+    # Optional Render Workflow integration
+    RENDER_API_KEY: str = ""
+    RENDER_WORKFLOW_TASK_SLUG: str = ""
     
     # Neo4j
     NEO4J_URI: str = "bolt://localhost:7687"

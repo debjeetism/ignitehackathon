@@ -34,6 +34,34 @@ services:
         value: /tmp/ignite-agent/ignite-state.db
       - key: CORS_ORIGINS
         value: '["*"]'
+      - key: RENDER_API_KEY
+        sync: false
+      - key: RENDER_WORKFLOW_TASK_SLUG
+        value: ignite-agent-ingestion/ingest_traceability_rows
+
+  # Optional asynchronous ingestion workflow. It has no HTTP port.
+  - type: workflow
+    name: ignite-agent-ingestion
+    runtime: python
+    region: oregon
+    plan: flex
+    buildCommand: pip install -r backend/requirements.txt -r workflows/requirements.txt
+    startCommand: python workflows/main.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: NEO4J_URI
+        sync: false
+      - key: NEO4J_USERNAME
+        sync: false
+      - key: NEO4J_PASSWORD
+        sync: false
+      - key: NEO4J_DATABASE
+        sync: false
+      - key: NEO4J_TRUST_ALL_CERTIFICATES
+        value: "false"
+      - key: IGNITE_DATA_DIR
+        value: /tmp/ignite-agent
 
   # Frontend Static Site
   - type: web

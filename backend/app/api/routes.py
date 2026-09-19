@@ -8,12 +8,14 @@ from typing import List
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 
-from app.models.schemas import AgentMessage, AnalysisRequest, AnalysisResponse, ChatContext, ChatRequest, GraphData, GraphNode, GraphQueryRequest, HealthResponse, IncidentEvent, IngestionResult, ReplacementSuggestion, SearchRequest, SearchResult, SimulatedAction, SimulatedActionRequest
+from app.core.config import settings
+from app.models.schemas import AgentMessage, AnalysisRequest, AnalysisResponse, ChatContext, ChatRequest, GraphData, GraphNode, GraphQueryRequest, HealthResponse, IncidentEvent, IngestionResult, ReplacementSuggestion, SearchRequest, SearchResult, SimulatedAction, SimulatedActionRequest, WorkflowAvailability, WorkflowRun
 from app.services.agent_service import agent_service
 from app.services.cypher_guard import validate_read_query
 from app.services.graph_service import graph_service
 from app.services.ingestion_service import import_rows, parse_csv
 from app.services.persistence_service import persistence_service
+from app.services.render_workflow_service import render_workflow_service
 from app.services.tavily_service import tavily_service
 
 router = APIRouter(prefix="/api/v1")
@@ -43,13 +45,17 @@ async def get_persistent_state():
     return persistence_service.get_state()
 
 
-async def _ingest_csv(file: UploadFile, commit: bool) -> IngestionResult:
+async def _parse_ingestion_file(file: UploadFile):
     if not file.filename or not file.filename.lower().endswith(".csv"):
         raise HTTPException(status_code=400, detail="Upload a UTF-8 .csv file")
     try:
-        preview, rows = parse_csv(file.filename, await file.read())
+        return parse_csv(file.filename, await file.read())
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+async def _ingest_csv(file: UploadFile, commit: bool) -> IngestionResult:
+    preview, rows = await _parse_ingestion_file(file)
     if not commit:
         return IngestionResult(**preview.model_dump(), imported=False)
     if not graph_service.is_connected():
@@ -65,6 +71,37 @@ async def preview_ingestion(file: UploadFile = File(...)):
 @router.post("/ingestion/import", response_model=IngestionResult)
 async def import_ingestion(file: UploadFile = File(...)):
     return await _ingest_csv(file, commit=True)
+
+
+@router.get("/ingestion/workflow", response_model=WorkflowAvailability)
+async def workflow_availability():
+    return WorkflowAvailability(
+        enabled=render_workflow_service.is_configured(),
+        task_slug=settings.RENDER_WORKFLOW_TASK_SLUG or None,
+    )
+
+
+@router.post("/ingestion/workflow/start", response_model=WorkflowRun)
+async def start_ingestion_workflow(file: UploadFile = File(...)):
+    if not render_workflow_service.is_configured():
+        raise HTTPException(status_code=503, detail="Render Workflow is not configured")
+    preview, rows = await _parse_ingestion_file(file)
+    if not rows:
+        raise HTTPException(status_code=400, detail="CSV contains no valid rows")
+    try:
+        return await render_workflow_service.start_ingestion(preview.filename, rows)
+    except RuntimeError as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
+
+
+@router.get("/ingestion/workflow/{run_id}", response_model=WorkflowRun)
+async def get_ingestion_workflow(run_id: str):
+    if not render_workflow_service.is_configured():
+        raise HTTPException(status_code=503, detail="Render Workflow is not configured")
+    try:
+        return await render_workflow_service.get_status(run_id)
+    except RuntimeError as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
 
 
 @router.delete("/state/chat")

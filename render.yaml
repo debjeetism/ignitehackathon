@@ -44,7 +44,6 @@ services:
     name: ignite-agent-ingestion
     runtime: python
     region: oregon
-    plan: flex
     buildCommand: pip install -r backend/requirements.txt -r workflows/requirements.txt
     startCommand: python workflows/main.py
     envVars:

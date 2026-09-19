@@ -4,6 +4,8 @@ Trace Control is an Emergency Operations Command Center for food-safety incident
 
 Built for the Ignite-with-Delhi Hackathon.
 
+**Hosted frontend:** https://ignite-agent-web.onrender.com/dashboard
+
 ## Tech Stack
 
 - **Backend:** FastAPI, Python, Pydantic v2
@@ -79,6 +81,7 @@ npm run dev
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:8000
 - API Documentation: http://localhost:8000/docs
+
 
 ## Core Workflow
 
